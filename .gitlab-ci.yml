@@ -22,7 +22,6 @@ validate:
   stage: validate
   script:
     - terraform validate
-    - terraform fmt -check=true
   only:
     - branches
 
