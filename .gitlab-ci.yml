@@ -4,20 +4,19 @@ image:
     - '/usr/bin/env'
     - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
+
 variables:
   TF_IN_AUTOMATION: "true"
   PLAN: plan.tfplan
   JSON_PLAN_FILE: tfplan.json
 
-cache:
-  key: "$CI_COMMIT_REF_SLUG"
-  paths:
-    - .terraform
-
 before_script:
-  - apk add --update curl jq
-  - alias convert_report="jq -r '([.resource_changes[].change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+  - rm -rf .terraform
   - terraform --version
+  - mkdir -p ./credentials
+  - echo $SERVICEACCOUNT | base64 -d > ./credentials/dev.json
+  - export TF_VAR_db_user=$db_user
+  - export TF_VAR_db_pass=$db_pass
   - terraform init
 
 stages:
