@@ -1,0 +1,49 @@
+image:
+  name: hashicorp/terraform:light
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+before_script:
+  - rm -rf .terraform
+  - terraform --version
+  - mkdir -p ./credentials
+  - echo $SERVICEACCOUNT | base64 -d > ./credentials/dev.json
+  - export TF_VAR_db_user=$db_user
+  - export TF_VAR_db_pass=$db_pass
+  - terraform init
+
+stages:
+  - validate
+  - plan
+  - apply
+
+validate:
+  stage: validate
+  script:
+    - terraform validate
+    - terraform fmt -check=true
+  only:
+    - branches
+
+plan:
+  stage: plan
+  script:
+     - terraform plan -out "planfile"
+  dependencies:
+    - validate
+  artifacts:
+    name: plan
+    paths:
+      - planfile
+  only:
+    - merge_requests
+
+apply:
+  stage: apply
+  script:
+    - terraform apply -input=false "planfile"
+  dependencies:
+    - plan
+  only:
+    - master
