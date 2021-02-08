@@ -32,7 +32,6 @@ plan:
   dependencies:
     - validate
   artifacts:
-    name: plan
     paths:
       - planfile
   only:
