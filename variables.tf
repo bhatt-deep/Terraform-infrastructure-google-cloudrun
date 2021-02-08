@@ -5,3 +5,5 @@ variable "db_name" {
 variable "db_user" {} //dbterra
 
 variable "db_pass" {} //changeme
+
+variable "googlecred" {}

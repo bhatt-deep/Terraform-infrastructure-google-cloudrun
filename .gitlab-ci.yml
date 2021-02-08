@@ -1,0 +1,79 @@
+image:
+  name: hashicorp/terraform:light
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+variables:
+  TF_IN_AUTOMATION: "true"
+  PLAN: plan.tfplan
+  JSON_PLAN_FILE: tfplan.json
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .terraform
+
+before_script:
+  - apk add --update curl jq
+  - alias convert_report="jq -r '([.resource_changes[].change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+  - terraform --version
+  - terraform init
+
+stages:
+  - validate
+  - plan
+  - apply
+
+validate:
+  stage: validate
+  script:
+    - terraform validate
+    - terraform fmt -check=true
+  only:
+    - branches
+
+merge review:
+  stage: plan
+  script:
+    - terraform plan -out=$PLAN
+    - "terraform show --json $PLAN | convert_report > $JSON_PLAN_FILE"
+  artifacts:
+    name: plan
+    paths:
+      - $PLAN
+    reports:
+        terraform: $JSON_PLAN_FILE
+  only:
+    - merge_requests
+  except:
+    - schedules
+
+plan production:
+  stage: plan
+  script:
+    - terraform plan -out=$PLAN
+    - "terraform show --json $PLAN | convert_report > $JSON_PLAN_FILE"
+  artifacts:
+    name: plan
+    paths:
+      - $PLAN
+    reports:
+        terraform: $JSON_PLAN_FILE
+  only:
+    - master
+  except:
+    - schedules
+  resource_group: production
+
+apply:
+  stage: apply
+  script:
+    - terraform apply -input=false $PLAN
+  dependencies:
+    - plan production
+  only:
+    - master
+  except:
+    - schedules
+  resource_group: production

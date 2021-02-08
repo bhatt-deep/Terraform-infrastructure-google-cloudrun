@@ -8,7 +8,7 @@ terraform {
 
 provider "google" {
 
-  credentials = file("credentials/dev.json")
+  credentials = var.googlecred
 
   project = "course-project-1040"
   region  = "northamerica-northeast1"
