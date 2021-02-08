@@ -52,7 +52,7 @@ plan_master:
 apply:
   stage: apply
   script:
-    - terraform apply -input=false "planfile"
+    - terraform apply -auto-approve
   dependencies:
     - plan
   only:
