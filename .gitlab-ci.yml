@@ -6,7 +6,6 @@ image:
 
 
 variables:
-  TF_IN_AUTOMATION: "true"
   PLAN: plan.tfplan
   JSON_PLAN_FILE: tfplan.json
 
