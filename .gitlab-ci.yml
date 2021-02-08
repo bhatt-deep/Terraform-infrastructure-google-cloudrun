@@ -37,6 +37,18 @@ plan:
   only:
     - merge_requests
 
+plan_master:
+  stage: plan
+  script:
+     - terraform plan -out "planfile"
+  dependencies:
+    - validate
+  artifacts:
+    paths:
+      - planfile
+  only:
+    - master
+
 apply:
   stage: apply
   script:
