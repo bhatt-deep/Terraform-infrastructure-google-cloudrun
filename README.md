@@ -1,4 +1,4 @@
-# CSBC1040 Infrastructure
+# Terraform Infrastructure: Google Cloud Run 
 This Project enables implementation of google cloud run and cloud sql in terraform.
 
 There are few requirements to setup this project.
